@@ -499,14 +499,23 @@
         noiseSource.loop = true;
         sourceNode = noiseSource;
 
-      } else if (params.signalType === 'guitar') {
+            } else if (params.signalType === 'guitar') {
         try {
           const buffer = await loadGuitarBuffer();
-
+      
           const sampleSource = audioCtx.createBufferSource();
           sampleSource.buffer = buffer;
           sampleSource.loop = true;
+      
+          const guitarGain = audioCtx.createGain();
+          guitarGain.gain.value = 2.5; // hlasitosť gitary, skús 2 až 4
+      
+          sampleSource.connect(guitarGain);
+          guitarGain.connect(sourceBus);
+      
           sourceNode = sampleSource;
+          sourceNode.start();
+          return;
 
         } catch (error) {
           console.error(error);
