@@ -24,7 +24,7 @@
 
     .title {
       margin: 0 0 10px 0;
-      font-size: 26px;
+      font-size: 34px;
       font-weight: 700;
       line-height: 1.2;
     }
@@ -218,8 +218,8 @@
 
     const SAMPLE_GAINS = {
       guitar: 2.5,
-      drums: 1.8,
-      violin: 2.5
+      drums: 2.3,
+      violin: 2.7
     };
 
     const MAX_SPECTRUM_FREQ = 5000;
@@ -526,7 +526,7 @@
         noiseSource.buffer = noiseBuffer;
         noiseSource.loop = true;
 
-        sourceOutputGain.gain.value = 1;
+        sourceOutputGain.gain.value = 0,8;
         sourceNode = noiseSource;
       } else if (SAMPLE_URLS[params.signalType]) {
         try {
@@ -546,7 +546,7 @@
           fallbackOsc.type = 'sine';
           fallbackOsc.frequency.value = DEFAULT_FREQ;
 
-          sourceOutputGain.gain.value = 1;
+          sourceOutputGain.gain.value = 0.7;
           sourceNode = fallbackOsc;
         }
       } else {
@@ -554,7 +554,7 @@
         osc.type = params.signalType === 'square' ? 'square' : 'sine';
         osc.frequency.value = params.frequency;
 
-        sourceOutputGain.gain.value = 1;
+        sourceOutputGain.gain.value = 0.6;
         sourceNode = osc;
       }
 
@@ -676,7 +676,7 @@
     function drawInfo() {
       push();
 
-      const infoY = height - INFO_BOTTOM_MARGIN - 112;
+      const infoY = height - INFO_BOTTOM_MARGIN - 95;
 
       noStroke();
       fill(255);
@@ -686,10 +686,6 @@
       text('d1 = ' + d1.toFixed(2) + ' m', INFO_X, infoY);
       text('d2 = ' + d2.toFixed(2) + ' m', INFO_X, infoY + 34);
       text('τ = ' + (tau * 1000).toFixed(2) + ' ms', INFO_X, infoY + 68);
-
-      textSize(13);
-      fill(180);
-      text(getSignalText(), INFO_X, infoY + 106);
 
       pop();
     }
