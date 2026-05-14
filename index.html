@@ -526,7 +526,7 @@
         noiseSource.buffer = noiseBuffer;
         noiseSource.loop = true;
 
-        sourceOutputGain.gain.value = 0,8;
+        sourceOutputGain.gain.value = 0.7;
         sourceNode = noiseSource;
       } else if (SAMPLE_URLS[params.signalType]) {
         try {
@@ -546,7 +546,7 @@
           fallbackOsc.type = 'sine';
           fallbackOsc.frequency.value = DEFAULT_FREQ;
 
-          sourceOutputGain.gain.value = 0.7;
+          sourceOutputGain.gain.value = 0.5;
           sourceNode = fallbackOsc;
         }
       } else {
@@ -554,7 +554,7 @@
         osc.type = params.signalType === 'square' ? 'square' : 'sine';
         osc.frequency.value = params.frequency;
 
-        sourceOutputGain.gain.value = 0.6;
+        sourceOutputGain.gain.value = 0.35;
         sourceNode = osc;
       }
 
@@ -676,7 +676,7 @@
     function drawInfo() {
       push();
 
-      const infoY = height - INFO_BOTTOM_MARGIN - 95;
+      const infoY = height - INFO_BOTTOM_MARGIN - 35;
 
       noStroke();
       fill(255);
