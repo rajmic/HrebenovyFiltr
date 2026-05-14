@@ -526,7 +526,7 @@
         noiseSource.buffer = noiseBuffer;
         noiseSource.loop = true;
 
-        sourceOutputGain.gain.value = 0.7;
+        sourceOutputGain.gain.value = 0.6;
         sourceNode = noiseSource;
       } else if (SAMPLE_URLS[params.signalType]) {
         try {
@@ -554,7 +554,7 @@
         osc.type = params.signalType === 'square' ? 'square' : 'sine';
         osc.frequency.value = params.frequency;
 
-        sourceOutputGain.gain.value = 0.35;
+        sourceOutputGain.gain.value = 0.30;
         sourceNode = osc;
       }
 
@@ -676,7 +676,7 @@
     function drawInfo() {
       push();
 
-      const infoY = height - INFO_BOTTOM_MARGIN - 35;
+      const infoY = height - INFO_BOTTOM_MARGIN - 105;
 
       noStroke();
       fill(255);
