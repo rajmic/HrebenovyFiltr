@@ -180,6 +180,8 @@
             <option value="square_1760">Obdĺžnik 1760 Hz</option>
             <option value="noise">Šum</option>
             <option value="guitar">Gitara</option>
+            <option value="drums">Bicie</option>
+            <option value="violin">Husle</option>
           </select>
         </div>
 
@@ -198,11 +200,27 @@
   </div>
 
   <script>
-    const SPEED_OF_SOUND = 343;    // m/s
-    const PIXELS_PER_METER = 150;  // mierka scény
-    const DEFAULT_FREQ = 440;      // Hz
+    const SPEED_OF_SOUND = 343;
+    const PIXELS_PER_METER = 150;
+    const DEFAULT_FREQ = 440;
 
-    const GUITAR_SAMPLE_URL = './zvuky/guitar.wav';
+    const SAMPLE_URLS = {
+      guitar: './zvuky/guitar.wav',
+      drums: './zvuky/drums.wav',
+      violin: './zvuky/violin.wav'
+    };
+
+    const SAMPLE_LABELS = {
+      guitar: 'gitara: guitar.wav',
+      drums: 'bicie: drums.wav',
+      violin: 'husle: violin.wav'
+    };
+
+    const SAMPLE_GAINS = {
+      guitar: 2.5,
+      drums: 1.8,
+      violin: 2.5
+    };
 
     const MAX_SPECTRUM_FREQ = 5000;
     const SPECTRUM_MIN_DB = -100;
@@ -245,8 +263,9 @@
     let sourceNode = null;
 
     let noiseBuffer = null;
-    let guitarBuffer = null;
+    let sampleBuffers = {};
 
+    let sourceOutputGain = null;
     let sourceBus = null;
     let dryGain = null;
     let wetGain = null;
@@ -258,7 +277,7 @@
     let spectrumDataResult = null;
 
     let isPlaying = false;
-    let sampleLoadError = false;
+    let sampleLoadErrorName = '';
 
     function setup() {
       const app = document.getElementById('app');
@@ -338,7 +357,7 @@
     }
 
     function setSignalFromSelectValue(value) {
-      sampleLoadError = false;
+      sampleLoadErrorName = '';
 
       if (value === 'noise') {
         params.signalType = 'noise';
@@ -346,8 +365,8 @@
         return;
       }
 
-      if (value === 'guitar') {
-        params.signalType = 'guitar';
+      if (SAMPLE_URLS[value]) {
+        params.signalType = value;
         params.frequency = DEFAULT_FREQ;
         return;
       }
@@ -383,8 +402,12 @@
     }
 
     function getSignalText() {
-      if (sampleLoadError) {
-        return 'chyba načítania: guitar.wav';
+      if (sampleLoadErrorName) {
+        return 'chyba načítania: ' + sampleLoadErrorName + '.wav';
+      }
+
+      if (SAMPLE_LABELS[params.signalType]) {
+        return SAMPLE_LABELS[params.signalType];
       }
 
       switch (params.signalType) {
@@ -392,8 +415,6 @@
           return 'obdĺžnik: ' + params.frequency + ' Hz';
         case 'noise':
           return 'šum';
-        case 'guitar':
-          return 'gitara: guitar.wav';
         default:
           return 'sínus: ' + params.frequency + ' Hz';
       }
@@ -405,6 +426,7 @@
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       audioCtx = new AudioContextClass();
 
+      sourceOutputGain = audioCtx.createGain();
       sourceBus = audioCtx.createGain();
       dryGain = audioCtx.createGain();
       wetGain = audioCtx.createGain();
@@ -419,10 +441,13 @@
       analyserResult.maxDecibels = SPECTRUM_MAX_DB;
       spectrumDataResult = new Float32Array(analyserResult.frequencyBinCount);
 
+      sourceOutputGain.gain.value = 1;
       dryGain.gain.value = 0;
       wetGain.gain.value = 0;
       delayNode.delayTime.value = 0;
       masterGain.gain.value = 0;
+
+      sourceOutputGain.connect(sourceBus);
 
       sourceBus.connect(dryGain);
       sourceBus.connect(delayNode);
@@ -453,19 +478,22 @@
       return buffer;
     }
 
-    async function loadGuitarBuffer() {
-      if (guitarBuffer) return guitarBuffer;
+    async function loadSampleBuffer(sampleName) {
+      if (sampleBuffers[sampleName]) {
+        return sampleBuffers[sampleName];
+      }
 
-      const response = await fetch(GUITAR_SAMPLE_URL);
+      const response = await fetch(SAMPLE_URLS[sampleName]);
 
       if (!response.ok) {
-        throw new Error('Nepodarilo sa načítať súbor ' + GUITAR_SAMPLE_URL);
+        throw new Error('Nepodarilo sa načítať súbor ' + SAMPLE_URLS[sampleName]);
       }
 
       const arrayBuffer = await response.arrayBuffer();
-      guitarBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      const decodedBuffer = await audioCtx.decodeAudioData(arrayBuffer);
 
-      return guitarBuffer;
+      sampleBuffers[sampleName] = decodedBuffer;
+      return decodedBuffer;
     }
 
     function stopAndDisconnectSource() {
@@ -487,7 +515,7 @@
 
       stopAndDisconnectSource();
 
-      sampleLoadError = false;
+      sampleLoadErrorName = '';
 
       if (params.signalType === 'noise') {
         if (!noiseBuffer) {
@@ -497,44 +525,40 @@
         const noiseSource = audioCtx.createBufferSource();
         noiseSource.buffer = noiseBuffer;
         noiseSource.loop = true;
-        sourceNode = noiseSource;
 
-            } else if (params.signalType === 'guitar') {
+        sourceOutputGain.gain.value = 1;
+        sourceNode = noiseSource;
+      } else if (SAMPLE_URLS[params.signalType]) {
         try {
-          const buffer = await loadGuitarBuffer();
-      
+          const buffer = await loadSampleBuffer(params.signalType);
+
           const sampleSource = audioCtx.createBufferSource();
           sampleSource.buffer = buffer;
           sampleSource.loop = true;
-      
-          const guitarGain = audioCtx.createGain();
-          guitarGain.gain.value = 2.5; // hlasitosť gitary, skús 2 až 4
-      
-          sampleSource.connect(guitarGain);
-          guitarGain.connect(sourceBus);
-      
-          sourceNode = sampleSource;
-          sourceNode.start();
-          return;
 
+          sourceOutputGain.gain.value = SAMPLE_GAINS[params.signalType] ?? 2.0;
+          sourceNode = sampleSource;
         } catch (error) {
           console.error(error);
-          sampleLoadError = true;
+          sampleLoadErrorName = params.signalType;
 
           const fallbackOsc = audioCtx.createOscillator();
           fallbackOsc.type = 'sine';
           fallbackOsc.frequency.value = DEFAULT_FREQ;
+
+          sourceOutputGain.gain.value = 1;
           sourceNode = fallbackOsc;
         }
-
       } else {
         const osc = audioCtx.createOscillator();
         osc.type = params.signalType === 'square' ? 'square' : 'sine';
         osc.frequency.value = params.frequency;
+
+        sourceOutputGain.gain.value = 1;
         sourceNode = osc;
       }
 
-      sourceNode.connect(sourceBus);
+      sourceNode.connect(sourceOutputGain);
       sourceNode.start();
     }
 
