@@ -46,6 +46,21 @@
       font-weight: 700;
     }
 
+    .sqrt {
+      white-space: nowrap;
+    }
+
+    .sqrt-symbol {
+      font-size: 1.12em;
+      vertical-align: -0.05em;
+    }
+
+    .sqrt-content {
+      display: inline-block;
+      border-top: 2px solid #fff;
+      padding: 2px 4px 0 4px;
+    }
+
     #app {
       position: relative;
       width: 100%;
@@ -144,17 +159,24 @@
         pričom jeho frekvenčná charakteristika má tvar
       </p>
 
-      <div class="formula">|H(f)| = √(g<sub>1</sub><sup>2</sup> + g<sub>2</sub><sup>2</sup> + 2g<sub>1</sub>g<sub>2</sub> cos(2πfτ)),</div>
+      <div class="formula">
+        |H(f)| =
+        <span class="sqrt">
+          <span class="sqrt-symbol">√</span><span class="sqrt-content">g<sub>1</sub><sup>2</sup> + g<sub>2</sub><sup>2</sup> + 2g<sub>1</sub>g<sub>2</sub> cos(2πfτ)</span>
+        </span>,
+      </div>
 
       <p>
         kde <strong>g<sub>1</sub></strong> a <strong>g<sub>2</sub></strong> sú zosilnenia oboch vetiev.
       </p>
 
+      <div class="formula">Návod:</div>
+
       <p>
         Pri rovnakých vzdialenostiach oboch mikrofónov je <strong>τ = 0</strong> a hrebeňový filter nevzniká.
         So zväčšujúcim sa rozdielom dráh rastie oneskorenie a vo frekvenčnej charakteristike pribúdajú hustejšie
-        maximá a minimá. Pri sínuse je dobre viditeľné zosilnenie alebo potlačenie jednej frekvencie,
-        pri šume sa mení väčšia časť spektra.
+        maximá a minimá. Pri sínuse je viditeľné zosilnenie alebo potlačenie jednej frekvencie,
+        pri šume a hudobných nástrojoch sa mení väčšia časť spektra.
       </p>
 
       <p>
@@ -208,9 +230,9 @@
     };
 
     const SAMPLE_GAINS = {
-      guitar: 3,
-      drums: 3,
-      violin: 3
+      guitar: 2.5,
+      drums: 2.3,
+      violin: 2.7
     };
 
     const MAX_SPECTRUM_FREQ = 5000;
@@ -516,7 +538,7 @@
         noiseSource.buffer = noiseBuffer;
         noiseSource.loop = true;
 
-        sourceOutputGain.gain.value = 0.4;
+        sourceOutputGain.gain.value = 0.7;
         sourceNode = noiseSource;
       } else if (SAMPLE_URLS[params.signalType]) {
         try {
@@ -536,7 +558,7 @@
           fallbackOsc.type = 'sine';
           fallbackOsc.frequency.value = DEFAULT_FREQ;
 
-          sourceOutputGain.gain.value = 0.35;
+          sourceOutputGain.gain.value = 0.5;
           sourceNode = fallbackOsc;
         }
       } else {
@@ -544,7 +566,7 @@
         osc.type = params.signalType === 'square' ? 'square' : 'sine';
         osc.frequency.value = params.frequency;
 
-        sourceOutputGain.gain.value = 0.25;
+        sourceOutputGain.gain.value = 0.35;
         sourceNode = osc;
       }
 
