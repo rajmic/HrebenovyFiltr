@@ -217,9 +217,9 @@
     };
 
     const SAMPLE_GAINS = {
-      guitar: 2.5,
-      drums: 2.3,
-      violin: 2.7
+      guitar: 2.8,
+      drums: 2.8,
+      violin: 3
     };
 
     const MAX_SPECTRUM_FREQ = 5000;
@@ -233,8 +233,7 @@
     const RIGHT_PANEL_BOTTOM_MARGIN = 95;
     const RIGHT_PANEL_GAP = 28;
 
-    const INFO_X = 24;
-    const INFO_BOTTOM_MARGIN = 34;
+    const INFO_MARGIN = 24;
 
     const params = {
       gain1: 0,
@@ -526,7 +525,7 @@
         noiseSource.buffer = noiseBuffer;
         noiseSource.loop = true;
 
-        sourceOutputGain.gain.value = 0.6;
+        sourceOutputGain.gain.value = 0.55;
         sourceNode = noiseSource;
       } else if (SAMPLE_URLS[params.signalType]) {
         try {
@@ -676,16 +675,40 @@
     function drawInfo() {
       push();
 
-      const infoY = height - INFO_BOTTOM_MARGIN - 105;
+      const x = INFO_MARGIN;
+      const fontSize = 22;
+      const lineStep = 34;
+      const separatorOffset = 72;
+      const tauOffset = 86;
+      const blockH = tauOffset + fontSize;
+      const y = height - INFO_MARGIN - blockH;
+
+      const d1Text = 'd1 = ' + d1.toFixed(2) + ' m';
+      const d2Text = 'd2 = ' + d2.toFixed(2) + ' m';
+      const tauText = 'τ = ' + (tau * 1000).toFixed(2) + ' ms';
+
+      textSize(fontSize);
+      textAlign(LEFT, TOP);
+
+      const textW = Math.max(
+        textWidth(d1Text),
+        textWidth(d2Text),
+        textWidth(tauText)
+      );
 
       noStroke();
       fill(255);
-      textAlign(LEFT, TOP);
 
-      textSize(22);
-      text('d1 = ' + d1.toFixed(2) + ' m', INFO_X, infoY);
-      text('d2 = ' + d2.toFixed(2) + ' m', INFO_X, infoY + 34);
-      text('τ = ' + (tau * 1000).toFixed(2) + ' ms', INFO_X, infoY + 68);
+      text(d1Text, x, y);
+      text(d2Text, x, y + lineStep);
+
+      stroke(255);
+      strokeWeight(1);
+      line(x, y + separatorOffset, x + textW, y + separatorOffset);
+
+      noStroke();
+      fill(255);
+      text(tauText, x, y + tauOffset);
 
       pop();
     }
