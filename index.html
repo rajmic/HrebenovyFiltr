@@ -195,7 +195,7 @@
   </div>
 
   <script>
-    const SPEED_OF_SOUND = 343;
+    const C = 343;
     const PIXELS_PER_METER = 150;
     const DEFAULT_FREQ = 440;
 
@@ -378,7 +378,7 @@
     function updateGeometry() {
       d1 = dist(sourcePos.x, sourcePos.y, mic1Pos.x, mic1Pos.y) / PIXELS_PER_METER;
       d2 = dist(sourcePos.x, sourcePos.y, mic2Pos.x, mic2Pos.y) / PIXELS_PER_METER;
-      tau = (d2 - d1) / SPEED_OF_SOUND;
+      tau = (d2 - d1) / C;
     }
 
     function dbToLinear(db) {
@@ -496,7 +496,7 @@
           sampleSource.buffer = buffer;
           sampleSource.loop = true;
 
-          sourceOutputGain.gain.value = SAMPLE_GAINS[params.signalType] ?? 2.0;
+          sourceOutputGain.gain.value = SAMPLE_GAINS[params.signalType];
           sourceNode = sampleSource;
         } catch (error) {
           console.error(error);
