@@ -205,12 +205,6 @@
       violin: './zvuky/violin.wav'
     };
 
-    const SAMPLE_LABELS = {
-      guitar: 'gitara: guitar.wav',
-      drums: 'bicie: drums.wav',
-      violin: 'husle: violin.wav'
-    };
-
     const SAMPLE_GAINS = {
       guitar: 3,
       drums: 3,
@@ -260,7 +254,6 @@
     let sampleBuffers = {};
 
     let sourceOutputGain = null;
-    let sourceBus = null;
     let dryGain = null;
     let wetGain = null;
     let delayNode = null;
@@ -271,7 +264,6 @@
     let spectrumDataResult = null;
 
     let isPlaying = false;
-    let sampleLoadErrorName = '';
 
     function setup() {
       const app = document.getElementById('app');
@@ -351,8 +343,6 @@
     }
 
     function setSignalFromSelectValue(value) {
-      sampleLoadErrorName = '';
-
       if (value === 'noise') {
         params.signalType = 'noise';
         params.frequency = DEFAULT_FREQ;
@@ -395,25 +385,6 @@
       return Math.pow(10, db / 20);
     }
 
-    function getSignalText() {
-      if (sampleLoadErrorName) {
-        return 'chyba načítania: ' + sampleLoadErrorName + '.wav';
-      }
-
-      if (SAMPLE_LABELS[params.signalType]) {
-        return SAMPLE_LABELS[params.signalType];
-      }
-
-      switch (params.signalType) {
-        case 'square':
-          return 'obdĺžnik: ' + params.frequency + ' Hz';
-        case 'noise':
-          return 'šum';
-        default:
-          return 'sínus: ' + params.frequency + ' Hz';
-      }
-    }
-
     async function initAudio() {
       if (audioCtx) return;
 
@@ -421,7 +392,6 @@
       audioCtx = new AudioContextClass();
 
       sourceOutputGain = audioCtx.createGain();
-      sourceBus = audioCtx.createGain();
       dryGain = audioCtx.createGain();
       wetGain = audioCtx.createGain();
       delayNode = audioCtx.createDelay(1.0);
@@ -441,10 +411,8 @@
       delayNode.delayTime.value = 0;
       masterGain.gain.value = 0;
 
-      sourceOutputGain.connect(sourceBus);
-
-      sourceBus.connect(dryGain);
-      sourceBus.connect(delayNode);
+      sourceOutputGain.connect(dryGain);
+      sourceOutputGain.connect(delayNode);
 
       delayNode.connect(wetGain);
 
@@ -509,8 +477,6 @@
 
       stopAndDisconnectSource();
 
-      sampleLoadErrorName = '';
-
       if (params.signalType === 'noise') {
         if (!noiseBuffer) {
           noiseBuffer = createNoiseBuffer();
@@ -534,7 +500,6 @@
           sourceNode = sampleSource;
         } catch (error) {
           console.error(error);
-          sampleLoadErrorName = params.signalType;
 
           const fallbackOsc = audioCtx.createOscillator();
           fallbackOsc.type = 'sine';
