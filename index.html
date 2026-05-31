@@ -257,7 +257,6 @@
     let dryGain = null;
     let wetGain = null;
     let delayNode = null;
-    let mixBus = null;
     let masterGain = null;
 
     let analyserResult = null;
@@ -395,7 +394,6 @@
       dryGain = audioCtx.createGain();
       wetGain = audioCtx.createGain();
       delayNode = audioCtx.createDelay(1.0);
-      mixBus = audioCtx.createGain();
       masterGain = audioCtx.createGain();
 
       analyserResult = audioCtx.createAnalyser();
@@ -416,11 +414,10 @@
 
       delayNode.connect(wetGain);
 
-      dryGain.connect(mixBus);
-      wetGain.connect(mixBus);
+      dryGain.connect(masterGain);
+      wetGain.connect(masterGain);
 
-      mixBus.connect(analyserResult);
-      mixBus.connect(masterGain);
+      masterGain.connect(analyserResult);
       masterGain.connect(audioCtx.destination);
 
       await createAndStartSource();
