@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  padding: 0 0 28px 0;
+  padding: 0;
   background: #000;
   color: #fff;
   font-family: Arial, sans-serif;
@@ -33,13 +33,6 @@ body {
   margin: 6px 0 8px 0;
   font-size: 18px;
   font-weight: 700;
-}
-
-.copyright {
-  margin-top: 18px;
-  font-size: 13px;
-  color: #aaa;
-  text-align: center;
 }
 
 #app {
@@ -119,4 +112,11 @@ canvas {
 
 #pane {
   width: 100%;
+}
+
+.copyright {
+  margin-top: 18px;
+  font-size: 13px;
+  color: #aaa;
+  text-align: center;
 }
