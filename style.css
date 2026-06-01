@@ -36,10 +36,15 @@ body {
 }
 
 .copyright {
-  margin-top: 18px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  width: 100%;
   font-size: 13px;
   color: #aaa;
   text-align: center;
+  z-index: 100;
 }
 
 #app {
