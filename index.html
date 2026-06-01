@@ -10,13 +10,14 @@
   <script src="./kniznice/p5.min.js"></script>
   <script src="./kniznice/tweakpane.min.js"></script>
 </head>
+
 <body>
   <div class="content">
     <div class="title">Hrebeňový filter</div>
 
     <div class="intro">
       <p>
-        Aplikácia znázorňuje vznik hrebeňového filtra pri skladaní dvoch signálov z mikrofónov,
+        Applet znázorňuje vznik hrebeňového filtra pri skladaní dvoch signálov z mikrofónov,
         ktoré sú v rôznej vzdialenosti od zvukového zdroja. Rozdiel vzdialeností spôsobí časové oneskorenie
       </p>
 
@@ -24,9 +25,13 @@
 
       <p>
         kde <strong>d<sub>1</sub></strong> a <strong>d<sub>2</sub></strong> sú vzdialenosti mikrofónov od zdroja
-        a <strong>c</strong> je rýchlosť šírenia zvuku. Výsledný signál vzniká súčtom priamej a oneskorenej vetvy. V závislosti od veľkosti oneskorenia
-        môže pri jednotlivých frekvenciách dochádzať k skladaniu vo fáze alebo v protifáze,
-        z čoho vyplýva, že niektoré frekvencie sa zosilnia a iné naopak potlačia.
+        a <strong>c</strong> je rýchlosť šírenia zvuku.
+      </p>
+
+      <p>
+        Výsledný signál vzniká súčtom priamej a oneskorenej vetvy. V závislosti od veľkosti oneskorenia
+        sa jednotlivé frekvenčné zložky môžu skladať vo fáze alebo v protifáze. Niektoré frekvencie
+        sa preto vo výslednom signáli zosilnia, zatiaľ čo iné sa potlačia.
         Tento jav opisuje frekvenčná charakteristika, ktorá má tvar
       </p>
 
@@ -35,7 +40,10 @@
       </div>
 
       <p>
-        kde <strong>g<sub>1</sub></strong> a <strong>g<sub>2</sub></strong> sú zosilnenia oboch vetiev.
+        kde <strong>f</strong> je frekvencia, <strong>g<sub>1</sub></strong> a
+        <strong>g<sub>2</sub></strong> sú zosilnenia oboch vetiev a
+        <strong>τ</strong> je časové oneskorenie medzi nimi. Z grafu možno odčítať,
+        ktoré časti spektra budú vo výslednom signáli zosilnené a ktoré potlačené.
       </p>
 
       <p>
@@ -49,7 +57,7 @@
 
       <p>
         Mikrofóny možno presúvať myšou, v ľavom paneli nastavovať typ zvuku a zosilnenie oboch vetiev.
-        V pravej časti je zobrazená časť frekvenčného spektra výsledného signálu a frekvenčná charakteristika hrebeňového filtra.
+        V pravej časti je zobrazené frekvenčné spektrum výsledného signálu a samotného hrebeňového filtra.
       </p>
     </div>
 
