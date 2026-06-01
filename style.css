@@ -35,6 +35,13 @@ body {
   font-weight: 700;
 }
 
+.copyright {
+  margin-top: 18px;
+  font-size: 13px;
+  color: #aaa;
+  text-align: center;
+}
+
 #app {
   position: relative;
   width: 100%;
