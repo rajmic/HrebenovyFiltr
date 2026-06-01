@@ -1,6 +1,3 @@
-// Hrebenovy filter - hlavny JavaScript subor.
-// Tento subor riesi grafiku, ovladanie, vypocet oneskorenia, zvukovu cast a vykreslenie spektier.
-
 // Fyzikalne a graficke konstanty simulacie.
 const C = 343;
 const PIXELS_PER_METER = 150;
