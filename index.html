@@ -1,9 +1,14 @@
+<!--
+Program je soucasti bakalarske prace J. Krce z roku 2025/26
+Pavel Rajmic doprogramoval utlum signalu s rostouci vzdalenosti (s pomoci AI), prelozil do cestiny a celkove ucesal
+-->
+
 <!doctype html>
-<html lang="sk">
+<html lang="cz">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hrebeň</title>
+  <title>Hřebenový filtr</title>
 
   <link rel="stylesheet" href="./style.css" />
 
@@ -13,26 +18,29 @@
 
 <body>
   <div class="content">
-    <div class="title">Hrebeňový filter</div>
+    <div class="title">Vznik hřebenového filtru</div>
 
     <div class="intro">
       <p>
-        Aplikácia znázorňuje vznik hrebeňového filtra pri skladaní dvoch signálov z mikrofónov,
-        ktoré sú v rôznej vzdialenosti od zvukového zdroja. Rozdiel vzdialeností spôsobí časové oneskorenie
+        Aplikace znázorňuje vznik hřebenového filtru při snímání jednoho zdroje zvuku dvěma mikrofony,
+        které jsou v různé vzdálenosti od zdroje. Rozdíl vzdáleností je příčinou časového zpoždění (bez znaménka)
       </p>
 
       <div class="formula">τ = (d<sub>2</sub> − d<sub>1</sub>) / c,</div>
 
       <p>
-        kde <strong>d<sub>1</sub></strong> a <strong>d<sub>2</sub></strong> sú vzdialenosti mikrofónov od zdroja
-        a <strong>c</strong> je rýchlosť šírenia zvuku.
+        kde <strong>d<sub>1</sub></strong> a <strong>d<sub>2</sub></strong> jsou vzdálenosti mikrofonů od zdroje
+        a <strong>c</strong> je rychlost šíření zvuku.
       </p>
 
       <p>
-        Výsledný signál vzniká súčtom priamej a oneskorenej vetvy. V závislosti od veľkosti oneskorenia
-        sa jednotlivé frekvenčné zložky môžu skladať vo fáze alebo v protifáze. Niektoré frekvencie
-        sa preto vo výslednom signáli zosilnia, zatiaľ čo iné sa potlačia.
-        Tento jav opisuje frekvenčná charakteristika, ktorá má tvar
+        Výsledný signál vzniká součtem dvou zachycených signálů
+        (bližší mikrofon může být hlavní pro daný zdroj, druhý může představovat nechtěný, ale nevyhnutelný přeslech).
+        V závislosti na zpoždění jednotlivé
+        <a href="https://www.utko.fekt.vut.cz/~rajmic/applets/interference/">frekvenční složky signálu interferují</a>,
+        skládají se ve fázi či v protifázi.
+        Některé frekvence se proto ve výsledném mixu zesílí, zatímco jiné zeslabí či zcela potlačí.
+        Toto chování přesně popisuje modulová frekvenční charakteristika, která má vzorec
       </p>
 
       <div class="formula">
@@ -40,24 +48,38 @@
       </div>
 
       <p>
-        kde <strong>f</strong> je frekvencia, <strong>g<sub>1</sub></strong> a
-        <strong>g<sub>2</sub></strong> sú zosilnenia oboch vetiev a
-        <strong>τ</strong> je časové oneskorenie medzi nimi. Z grafu možno odčítať,
-        ktoré časti spektra budú vo výslednom signáli zosilnené a ktoré potlačené.
+        kde <strong>f</strong> je frekvence, <strong>g<sub>1</sub></strong> a
+        <strong>g<sub>2</sub></strong> jsou zesílení mikrofonních kanálů,
+        <strong>τ</strong> je časové zpoždění mezi nimi.
+        Tato teoretická funkce je v aplikaci zobrazena vpravo dole,
+        zatímco reálná charakteristika (na základě aktuálního signálu) je v grafu přímo nad ní. 
       </p>
 
       <p>
-        Pri rovnakých vzdialenostiach oboch mikrofónov je <strong>τ = 0</strong> a hrebeňový filter nevzniká.
-        So zväčšujúcim sa rozdielom dráh rastie oneskorenie a vo frekvenčnej charakteristike pribúdajú hustejšie
-        maximá a minimá. Pri sínuse je viditeľné zosilnenie alebo potlačenie jednej frekvencie,
-        pri šume a hudobných nástrojoch sa mení väčšia časť spektra.
+        Pokud jsou mikrofony ve shodné vdálenosti, je <strong>τ = 0</strong> a hřebenový filtr nevzniká
+        (resp. dochází pouze ke konstatnímu zesílení).
+        Se zvětšujícím se rozdílem vzdáleností se ve frekvenční charakteristice objevují hustěji maxima a minima.
+        Pri zvoleném sinusovém signálu je viditelné zesílení či potlačení jedné frekvencie,
+        při šumu a hudebních nástrojích se mění spektrum celkově.
+      </p>
+
+      <p>
+        V aplikaci je implementován úbytek úrovně hlasitosti,
+        a tak je možné si vyzkoušet
+        <a href="https://www.dpamicrophones.com/dict/3-1-rule/">pravidlo 3:1</a>,
+        které říká, že fázovací artefakty mezi zdroji jsou zanedbatelné, pokud jsou úrovně mikrofonů rozdílné alespoň o 10 dB.
+        Tento rozdíl nám zajišťuje právě trojnásobná vzdálenost.
       </p>
 
       <div class="formula">Návod:</div>
 
       <p>
-        Mikrofóny možno presúvať myšou, v ľavom paneli nastavovať typ zvuku a zosilnenie oboch vetiev.
-        V pravej časti je zobrazené frekvenčné spektrum výsledného signálu a samotného hrebeňového filtra.
+        Mikrofony je možné přesouvat myší, v panelu nastavovat zdrojový signál a zesílení obou mikrofonů.
+        V pravé části je frekvenční spektrum aktuálního signálu a teoretická hřebenová charakteristika.
+        Je možné zapnout/vypnout útlum signálu s rostoucí vzdáleností;
+        je implementován úbytek úrovně se čtvercem vzdálenosti, což odpovídá umístění objektů v tzv. volném poli bez odrazu.
+        V takovém případě ve vzorci výše zesílení <strong>g<sub>1</sub></strong> a <strong>g<sub>2</sub></strong> reprezentují souhrnné zesílení/zeslabení.
+        Zesílení je normalizováno na vzdálenost 1 metr, a pro vzdálenosti menší než půl metru od zdroje je další zesílení ignorováno. 
       </p>
     </div>
 
@@ -70,16 +92,16 @@
 
         <div id="signalControl">
           <select id="signalSelect">
-            <option value="sine_440">Sínus 440 Hz</option>
-            <option value="sine_880">Sínus 880 Hz</option>
-            <option value="sine_1760">Sínus 1760 Hz</option>
-            <option value="square_440">Obdĺžnik 440 Hz</option>
-            <option value="square_880">Obdĺžnik 880 Hz</option>
-            <option value="square_1760">Obdĺžnik 1760 Hz</option>
+            <option value="sine_440">Sinus 440 Hz</option>
+            <option value="sine_880">Sinus 880 Hz</option>
+            <option value="sine_1760">Sinus 1760 Hz</option>
+            <option value="square_440">Obdélník 440 Hz</option>
+            <option value="square_880">Obdélník 880 Hz</option>
+            <option value="square_1760">Obdélník 1760 Hz</option>
             <option value="noise">Šum</option>
-            <option value="guitar">Gitara</option>
-            <option value="drums">Bicie</option>
-            <option value="violin">Husle</option>
+            <option value="guitar">Kytara</option>
+            <option value="drums">Bicí</option>
+            <option value="violin">Synťák akordy</option>
           </select>
         </div>
 
@@ -87,7 +109,7 @@
       </div>
     </div>
 
-    <div class="copyright">© Jakub Kŕč a Pavel Rajmic, 2026</div>
+    <div class="copyright">© 2026 Jakub Kŕč a Pavel Rajmic, VUT v Brně</div>
   </div>
 
   <script src="./script.js"></script>

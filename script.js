@@ -1,3 +1,6 @@
+//Program je soucasti bakalarske prace J. Krce z roku 2025/26
+//Pavel Rajmic doprogramoval utlum signalu s rostouci vzdalenosti (s pomoci AI)
+
 // Fyzikalne a graficke konstanty simulacie.
 const C = 343;
 const PIXELS_PER_METER = 150;
@@ -38,6 +41,9 @@ const INFO_MARGIN = 24;
 const params = {
   gain1: 0,
   gain2: 0,
+  distanceAttenuation: true,
+  // tau in milliseconds for display in the pane (read-only)
+  tauMs: 0,
   signalType: 'sine',
   frequency: DEFAULT_FREQ
 };
@@ -78,6 +84,10 @@ let masterGain = null;
 let analyserResult = null;
 let spectrumDataResult = null;
 
+// Lineárne amplitúdy (po zohľadnení vzdialenosti/gain) pre zobrazenie pri mikrofónoch
+let mic1Amp = 1;
+let mic2Amp = 1;
+
 // Stav prehravania.
 let isPlaying = false;
 
@@ -110,7 +120,7 @@ function draw() {
   drawMicrophone(mic1Pos.x, mic1Pos.y, 1, draggedMic === 1);
   drawMicrophone(mic2Pos.x, mic2Pos.y, 2, draggedMic === 2);
 
-  drawInfo();
+  //drawInfo(); //zrusil PR
   drawSpectrumPanel();
   drawCombFilterPanel();
 }
@@ -121,8 +131,8 @@ function initLayout() {
 
   sourcePos = createVector(dividerX * 0.34, height * 0.52);
 
-  mic1Default = createVector(dividerX * 0.58, height * 0.38);
-  mic2Default = createVector(dividerX * 0.66, height * 0.62);
+  mic1Default = createVector(dividerX * 0.68, height * 0.38);
+  mic2Default = createVector(dividerX * 0.76, height * 0.62);
 
   mic1Pos = mic1Default.copy();
   mic2Pos = mic2Default.copy();
@@ -135,17 +145,27 @@ function makeUI() {
   });
 
   pane.addInput(params, 'gain1', {
-    label: 'GAIN 1 [dB]',
+    label: 'Gain mic 1 [dB]',
     min: -24,
     max: 12,
     step: 0.1
   });
 
   pane.addInput(params, 'gain2', {
-    label: 'GAIN 2 [dB]',
+    label: 'Gain mic  [dB]',
     min: -24,
     max: 12,
     step: 0.1
+  });
+
+  // Checkbox to enable distance-based amplitude modelling
+  pane.addInput(params, 'distanceAttenuation', {
+    label: 'Úbytek hlasitosti'
+  });
+
+  // Monitor tau (ms) in the pane for quick reference
+  pane.addMonitor(params, 'tauMs', {
+    label: 'τ [ms]'
   });
 }
 
@@ -203,11 +223,27 @@ function updateGeometry() {
   d1 = dist(sourcePos.x, sourcePos.y, mic1Pos.x, mic1Pos.y) / PIXELS_PER_METER;
   d2 = dist(sourcePos.x, sourcePos.y, mic2Pos.x, mic2Pos.y) / PIXELS_PER_METER;
   tau = (d2 - d1) / C;
+
+  // Update pane-readable tau in milliseconds
+  if (typeof params !== 'undefined') {
+    params.tauMs = (tau * 1000);
+  }
 }
 
-// Prevod zosilnenia z decibelov na linearnu hodnotu.
+// Prevod zosilnenia z decibelov (intenzita) na linearnu hodnotu.
 function dbToLinear(db) {
   return Math.pow(10, db / 20);
+}
+
+// Compute distance-based attenuation (inverse-square) with clamping.
+// Returns 1 when distance attenuation is disabled.
+// Vraci hodnotu 1 pro vzdalenost 1 metr.
+function computeAttenuation(distance) {
+  if (!params.distanceAttenuation) return 1;
+  const minDistance = 0.5; // meters, avoid singularity near 0
+  const cap = 4; // maximum amplification factor
+  const d = Math.max(distance, minDistance);
+  return Math.min(1 / (d * d), cap);
 }
 
 // Inicializacia zvukoveho retazca Web Audio API.
@@ -364,12 +400,23 @@ async function switchSignalType() {
 
 // Aktualizacia oneskorenia a zosilneni oboch vetiev hrebenoveho filtra.
 function updateAudioParameters() {
+  const baseG1 = dbToLinear(params.gain1);
+  const baseG2 = dbToLinear(params.gain2);
+
+  const att1 = computeAttenuation(d1);
+  const att2 = computeAttenuation(d2);
+
+  const g1 = baseG1 * att1;
+  const g2 = baseG2 * att2;
+
+  // Expose per-microphone amplitudes for UI display
+  mic1Amp = g1;
+  mic2Amp = g2;
+
   if (!audioCtx) return;
 
   const now = audioCtx.currentTime;
   const smooth = 0.02;
-  const g1 = dbToLinear(params.gain1);
-  const g2 = dbToLinear(params.gain2);
   const absTau = Math.abs(tau);
 
   let targetDry = g1;
@@ -389,7 +436,7 @@ function updateAudioParameters() {
   dryGain.gain.setTargetAtTime(targetDry, now, smooth);
   wetGain.gain.setTargetAtTime(targetWet, now, smooth);
   delayNode.delayTime.setTargetAtTime(absTau, now, smooth);
-  masterGain.gain.setTargetAtTime(isPlaying ? 0.08 : 0.0, now, 0.01);
+  masterGain.gain.setTargetAtTime(isPlaying ? 0.5 : 0.0, now, 0.01);
 }
 
 // Spustenie alebo zastavenie prehravania.
@@ -433,7 +480,7 @@ function drawGuideLine(a, b) {
   push();
   stroke(180);
   strokeWeight(0.6);
-  drawingContext.setLineDash([4, 6]);
+  drawingContext.setLineDash([3, 6]);
   line(a.x, a.y, b.x, b.y);
   drawingContext.setLineDash([]);
   pop();
@@ -446,7 +493,20 @@ function drawSource(x, y) {
   strokeWeight(2);
   noFill();
   rectMode(CENTER);
-  rect(x, y, 34, 34);
+  rect(x, y, 25, 25);
+
+  // Draw dashed circle at 0.5 m when distance attenuation is enabled
+  if (params.distanceAttenuation) {
+    push();
+    stroke(150);
+    strokeWeight(1);
+    noFill();
+    drawingContext.setLineDash([1, 5]);
+    const radius = 0.5 * PIXELS_PER_METER;
+    ellipse(x, y, radius * 2, radius * 2);
+    drawingContext.setLineDash([]);
+    pop();
+  }
 
   noStroke();
   fill(255);
@@ -472,7 +532,22 @@ function drawMicrophone(x, y, number, active) {
   fill(255);
   textAlign(LEFT, CENTER);
   textSize(18);
-  text(number, x + 16, y - 10);
+  text(number, x - 5, y - 32);
+
+  // Always show true distance next to mic (even when distance attenuation is off)
+  const distVal = number === 1 ? d1 : d2;
+  const distText = 'd' + number + ' = ' + distVal.toFixed(2) + ' m';
+
+  // Draw per-microphone amplitude label (linear and dB)
+  const amp = number === 1 ? mic1Amp : mic2Amp;
+  const ampDb = 10 * Math.log10(Math.max(amp, 1e-6)); //not 20
+  const ampText = ampDb.toFixed(1) + ' dB';
+
+  textSize(12);
+  textAlign(LEFT, TOP);
+  text(distText, x + 16, y + 2);
+  text(ampText, x + 16, y + 18);
+
   pop();
 }
 
@@ -610,10 +685,16 @@ function drawCombFilterPanel() {
   const panelW = layout.panelW;
   const panelH = layout.panelH;
 
-  const g1 = dbToLinear(params.gain1);
-  const g2 = dbToLinear(params.gain2);
+  const baseG1 = dbToLinear(params.gain1);
+  const baseG2 = dbToLinear(params.gain2);
   const absTau = Math.abs(tau);
   const eps = 1e-6;
+
+  const att1 = computeAttenuation(d1);
+  const att2 = computeAttenuation(d2);
+
+  const g1 = baseG1 * att1;
+  const g2 = baseG2 * att2;
 
   push();
 
